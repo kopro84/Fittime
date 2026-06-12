@@ -5,178 +5,125 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>핏미 — AI 가상 피팅</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --black: #0a0a0a; --white: #f8f6f2; --accent: #c8f542; --gray1: #1a1a1a; --gray2: #2a2a2a; --gray3: #555; --gray4: #999; --font: 'Noto Sans KR', sans-serif; }
-  body { background: var(--black); color: var(--white); font-family: var(--font); min-height: 100vh; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--gray2); }
-  .logo { font-size: 22px; font-weight: 700; }
-  .logo span { color: var(--accent); }
-  .tagline { font-size: 12px; color: var(--gray4); letter-spacing: 1px; text-transform: uppercase; }
-  main { max-width: 860px; margin: 0 auto; padding: 36px 18px 80px; }
-  .hero { text-align: center; margin-bottom: 36px; }
-  .hero h1 { font-size: clamp(24px, 5vw, 44px); font-weight: 700; line-height: 1.2; letter-spacing: -1px; margin-bottom: 10px; }
-  .hero h1 em { font-style: normal; color: var(--accent); }
-  .hero p { font-size: 14px; color: var(--gray4); }
-  .notice { background: var(--gray1); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; font-size: 13px; color: var(--gray4); line-height: 1.6; }
-  .input-row { margin-bottom: 22px; }
-  .input-row input { width: 100%; background: var(--gray1); border: 1.5px solid var(--gray2); border-radius: 10px; color: var(--white); font-family: var(--font); font-size: 13px; padding: 13px 16px; outline: none; transition: border-color 0.2s; }
-  .input-row input:focus { border-color: var(--accent); }
-  .input-row input::placeholder { color: var(--gray3); }
-  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
-  @media (max-width: 480px) { .steps { grid-template-columns: 1fr; } }
-  .upload-box { background: var(--gray1); border: 1.5px dashed var(--gray3); border-radius: 14px; padding: 26px 14px; text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative; overflow: hidden; }
-  .upload-box:hover { border-color: var(--accent); }
-  .upload-box.has-image { border-style: solid; border-color: var(--accent); }
-  .upload-box input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .upload-icon { font-size: 32px; margin-bottom: 10px; }
-  .upload-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .upload-box p { font-size: 12px; color: var(--gray4); }
-  .preview-img { width: 100%; max-height: 190px; object-fit: cover; border-radius: 9px; margin-top: 10px; display: none; }
-  .btn-fit { display: block; width: 100%; padding: 17px; background: var(--accent); color: var(--black); font-family: var(--font); font-size: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 14px; }
-  .btn-fit:disabled { opacity: 0.32; cursor: not-allowed; }
-  .status { font-size: 13px; text-align: center; margin-bottom: 14px; min-height: 18px; color: var(--gray4); }
-  .status.err { color: #ff6b6b; }
-  .status.ok { color: var(--accent); }
-  .result-section { display: none; }
-  .result-section.on { display: block; }
-  .divider { display: flex; align-items: center; gap: 10px; margin: 22px 0 14px; color: var(--gray3); font-size: 12px; }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gray2); }
-  .section-label { font-size: 11px; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; font-weight: 600; }
-  .result-wrap { background: var(--gray1); border-radius: 14px; overflow: hidden; min-height: 180px; display: flex; align-items: center; justify-content: center; }
-  .result-wrap img { width: 100%; border-radius: 14px; }
-  .loading { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 48px 20px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--gray2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading p { color: var(--gray4); font-size: 13px; }
-  .shop-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-  .shop-btn { padding: 9px 16px; border-radius: 20px; border: 1.5px solid var(--gray2); background: transparent; color: var(--white); font-family: var(--font); font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.2s; }
-  .shop-btn:hover { border-color: var(--accent); }
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0a0a;--fg:#f8f6f2;--acc:#c8f542;--g1:#1a1a1a;--g2:#2a2a2a;--g3:#555;--g4:#999}
+  body{background:var(--bg);color:var(--fg);font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--g2)}
+  .logo{font-size:20px;font-weight:700}.logo span{color:var(--acc)}
+  main{max-width:800px;margin:0 auto;padding:32px 16px 80px}
+  .hero{text-align:center;margin-bottom:32px}
+  .hero h1{font-size:clamp(22px,5vw,40px);font-weight:700;line-height:1.2;margin-bottom:8px}
+  .hero h1 em{font-style:normal;color:var(--acc)}
+  .hero p{font-size:14px;color:var(--g4)}
+  .notice{background:var(--g1);border-left:3px solid var(--acc);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--g4)}
+  .irow{margin-bottom:20px}
+  .irow input{width:100%;background:var(--g1);border:1.5px solid var(--g2);border-radius:10px;color:var(--fg);font-size:13px;padding:12px 14px;outline:none}
+  .irow input:focus{border-color:var(--acc)}
+  .irow input::placeholder{color:var(--g3)}
+  .steps{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+  @media(max-width:480px){.steps{grid-template-columns:1fr}}
+  .ubox{background:var(--g1);border:1.5px dashed var(--g3);border-radius:14px;padding:24px 12px;text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s}
+  .ubox:hover,.ubox.has{border-color:var(--acc);border-style:solid}
+  .ubox input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .ubox .icon{font-size:30px;margin-bottom:8px}
+  .ubox h3{font-size:14px;font-weight:600;margin-bottom:4px}
+  .ubox p{font-size:12px;color:var(--g4)}
+  .ubox img{width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:10px;display:none}
+  .btn{display:block;width:100%;padding:16px;background:var(--acc);color:var(--bg);font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  .msg{font-size:13px;text-align:center;margin-bottom:12px;min-height:18px;color:var(--g4)}
+  .msg.err{color:#ff6b6b}.msg.ok{color:var(--acc)}
+  .result{display:none}.result.on{display:block}
+  .dvd{display:flex;align-items:center;gap:10px;margin:20px 0 12px;color:var(--g3);font-size:12px}
+  .dvd::before,.dvd::after{content:'';flex:1;height:1px;background:var(--g2)}
+  .rlabel{font-size:11px;color:var(--acc);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+  .rwrap{background:var(--g1);border-radius:14px;min-height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .rwrap img{width:100%;border-radius:14px}
+  .spin-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 20px}
+  .spinner{width:34px;height:34px;border:3px solid var(--g2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin-wrap p{color:var(--g4);font-size:13px}
+  .shops{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .sbtn{padding:8px 14px;border-radius:20px;border:1.5px solid var(--g2);background:transparent;color:var(--fg);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+  .sbtn:hover{border-color:var(--acc)}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">핏<span>미</span></div>
-  <div class="tagline">AI 가상 피팅</div>
-</header>
+<header><div class="logo">핏<span>미</span></div><span style="font-size:11px;color:var(--g4);text-transform:uppercase;letter-spacing:1px">AI 가상 피팅</span></header>
 <main>
   <div class="hero">
     <h1>길에서 본 옷,<br><em>내 몸에 입혀보세요</em></h1>
     <p>사진 두 장만 올리면 AI가 착용샷을 만들어드려요</p>
   </div>
-  <div class="notice">🔑 Replicate API 키를 입력하세요</div>
-  <div class="input-row">
-    <input type="password" id="apiKey" placeholder="r8_xxxxxxxxxxxxxxxx" autocomplete="off" />
-  </div>
+  <div class="notice">🔑 Replicate API 키 입력 (replicate.com → Account → API tokens)</div>
+  <div class="irow"><input type="password" id="key" placeholder="r8_xxxxxxxxxxxxxxxx" autocomplete="off"/></div>
   <div class="steps">
-    <div class="upload-box" id="personBox">
-      <input type="file" id="personInput" accept="image/*" />
-      <div class="upload-icon">🧍</div>
-      <h3>내 사진 업로드</h3>
-      <p>전신 사진이면 더 좋아요</p>
-      <img class="preview-img" id="personPreview" alt="내 사진" />
-    </div>
-    <div class="upload-box" id="clothBox">
-      <input type="file" id="clothInput" accept="image/*" />
-      <div class="upload-icon">👕</div>
-      <h3>옷 사진 업로드</h3>
-      <p>길에서 찍은 사진도 OK</p>
-      <img class="preview-img" id="clothPreview" alt="옷 사진" />
-    </div>
+    <div class="ubox" id="pb"><input type="file" id="pi" accept="image/*"/><div class="icon">🧍</div><h3>내 사진</h3><p>전신이면 좋아요</p><img id="pp"/></div>
+    <div class="ubox" id="cb"><input type="file" id="ci" accept="image/*"/><div class="icon">👕</div><h3>옷 사진</h3><p>길거리 사진도 OK</p><img id="cp"/></div>
   </div>
-  <button class="btn-fit" id="fitBtn" disabled>✨ AI 착용샷 만들기</button>
-  <div class="status" id="status"></div>
-  <div class="result-section" id="resultSection">
-    <div class="divider">결과</div>
-    <div class="section-label">AI 착용샷</div>
-    <div class="result-wrap" id="resultWrap">
-      <div class="loading" id="loadingEl" style="display:none">
-        <div class="spinner"></div>
-        <p id="loadingText">AI가 착용샷을 만들고 있어요...</p>
-      </div>
+  <button class="btn" id="btn" disabled>✨ AI 착용샷 만들기</button>
+  <div class="msg" id="msg"></div>
+  <div class="result" id="res">
+    <div class="dvd">결과</div>
+    <div class="rlabel">AI 착용샷</div>
+    <div class="rwrap" id="rw">
+      <div class="spin-wrap" id="sp" style="display:none"><div class="spinner"></div><p id="st">AI가 만들고 있어요...</p></div>
     </div>
-    <div id="shopSection" style="display:none">
-      <div class="divider">쇼핑</div>
-      <div class="section-label">이 옷 저렴하게 구매하기</div>
-      <div class="shop-row">
-        <a class="shop-btn" href="https://www.coupang.com/np/search?q=의류" target="_blank">🛒 쿠팡</a>
-        <a class="shop-btn" href="https://search.shopping.naver.com/search/all?query=의류" target="_blank">🟢 네이버쇼핑</a>
-        <a class="shop-btn" href="https://www.musinsa.com/search/musinsa/integration?q=의류" target="_blank">👗 무신사</a>
+    <div id="shop" style="display:none">
+      <div class="dvd">쇼핑</div>
+      <div class="rlabel">저렴하게 구매하기</div>
+      <div class="shops">
+        <a class="sbtn" href="https://www.coupang.com/np/search?q=의류" target="_blank">🛒 쿠팡</a>
+        <a class="sbtn" href="https://search.shopping.naver.com/search/all?query=의류" target="_blank">🟢 네이버</a>
+        <a class="sbtn" href="https://www.musinsa.com/search/musinsa/integration?q=의류" target="_blank">👗 무신사</a>
       </div>
     </div>
   </div>
 </main>
 <script>
-  let personFile = null, clothFile = null;
-  function setupUpload(inputId, previewId, boxId, onFile) {
-    document.getElementById(inputId).addEventListener('change', e => {
-      const f = e.target.files[0]; if (!f) return;
-      onFile(f);
-      const pr = document.getElementById(previewId);
-      pr.src = URL.createObjectURL(f); pr.style.display = 'block';
-      document.getElementById(boxId).classList.add('has-image');
-      document.getElementById('fitBtn').disabled = !(personFile && clothFile);
+let pf=null,cf=null;
+function su(ii,pi,bi,cb){document.getElementById(ii).addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;cb(f);const p=document.getElementById(pi);p.src=URL.createObjectURL(f);p.style.display='block';document.getElementById(bi).classList.add('has');document.getElementById('btn').disabled=!(pf&&cf);});}
+su('pi','pp','pb',f=>{pf=f;document.getElementById('btn').disabled=!(f&&cf);});
+su('ci','cp','cb',f=>{cf=f;document.getElementById('btn').disabled=!(pf&&f);});
+const b64=f=>new Promise((r,j)=>{const x=new FileReader();x.onload=()=>r(x.result);x.onerror=j;x.readAsDataURL(f);});
+function sm(t,c=''){const e=document.getElementById('msg');e.textContent=t;e.className='msg'+(c?' '+c:'');}
+document.getElementById('btn').addEventListener('click',async()=>{
+  const k=document.getElementById('key').value.trim();
+  if(!k){sm('⚠️ API 키를 입력해주세요','err');return;}
+  document.getElementById('btn').disabled=true;
+  document.getElementById('res').className='result on';
+  document.getElementById('sp').style.display='flex';
+  document.getElementById('shop').style.display='none';
+  const old=document.getElementById('rw').querySelector('img.fi');if(old)old.remove();
+  sm('이미지 준비 중...');
+  try{
+    const[p,c]=await Promise.all([b64(pf),b64(cf)]);
+    sm('AI에게 요청 중...');
+    const r=await fetch('https://api.replicate.com/v1/predictions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+k,'Content-Type':'application/json'},
+      body:JSON.stringify({version:'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4',input:{human_img:p,garm_img:c,garment_des:'clothing',is_checked:true,is_checked_crop:false,denoise_steps:30,seed:42}})
     });
-  }
-  setupUpload('personInput','personPreview','personBox', f => { personFile = f; document.getElementById('fitBtn').disabled = !(f && clothFile); });
-  setupUpload('clothInput','clothPreview','clothBox', f => { clothFile = f; document.getElementById('fitBtn').disabled = !(personFile && f); });
-  const toBase64 = f => new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
-  function setStatus(msg, type='') { const el=document.getElementById('status'); el.textContent=msg; el.className='status'+(type?' '+type:''); }
-  async function apiFetch(apiKey, path, opts={}) {
-    const targetUrl = 'https://api.replicate.com' + path;
-    const headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-    try {
-      const res = await fetch(targetUrl, { ...opts, headers });
-      const json = await res.json();
-      return json;
-    } catch(e) {}
-    try {
-      const res = await fetch('https://thingproxy.freeboard.io/fetch/' + targetUrl, { ...opts, headers });
-      const json = await res.json();
-      return json;
-    } catch(e) {}
-    throw new Error('API 연결 실패');
-  }
-  document.getElementById('fitBtn').addEventListener('click', async () => {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { setStatus('⚠️ API 키를 입력해주세요','err'); return; }
-    document.getElementById('fitBtn').disabled = true;
-    document.getElementById('resultSection').className = 'result-section on';
-    document.getElementById('loadingEl').style.display = 'flex';
-    document.getElementById('shopSection').style.display = 'none';
-    const prev = document.getElementById('resultWrap').querySelector('img.final');
-    if (prev) prev.remove();
-    setStatus('이미지 준비 중...');
-    try {
-      const [p64, c64] = await Promise.all([toBase64(personFile), toBase64(clothFile)]);
-      setStatus('AI에게 요청 중...');
-      const pred = await apiFetch(apiKey, '/v1/predictions', {
-        method: 'POST',
-        body: JSON.stringify({ version: "c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4", input: { human_img: p64, garm_img: c64, garment_des: "clothing item", is_checked: true, is_checked_crop: false, denoise_steps: 30, seed: 42 } })
-      });
-      if (pred.error) throw new Error(pred.error);
-      if (!pred.id) throw new Error('요청 실패: ' + JSON.stringify(pred));
-      let result = pred, tries = 0;
-      while (result.status !== 'succeeded' && result.status !== 'failed' && tries < 60) {
-        await new Promise(r => setTimeout(r, 2500)); tries++;
-        document.getElementById('loadingText').textContent = `AI가 만들고 있어요... (${tries*2|0}초)`;
-        try { result = await apiFetch(apiKey, `/v1/predictions/${pred.id}`); } catch(e) {}
-      }
-      document.getElementById('loadingEl').style.display = 'none';
-      if (result.status === 'succeeded' && result.output) {
-        const img = document.createElement('img');
-        img.src = Array.isArray(result.output) ? result.output[0] : result.output;
-        img.className = 'final';
-        document.getElementById('resultWrap').appendChild(img);
-        setStatus('✅ 착용샷 완성!', 'ok');
-        document.getElementById('shopSection').style.display = 'block';
-      } else { throw new Error(result.error || '생성 실패'); }
-    } catch(err) {
-      document.getElementById('loadingEl').style.display = 'none';
-      setStatus('❌ ' + err.message, 'err');
+    const pred=await r.json();
+    if(pred.error)throw new Error(pred.error);
+    if(!pred.id)throw new Error('요청 실패');
+    let result=pred,t=0;
+    while(result.status!=='succeeded'&&result.status!=='failed'&&t<60){
+      await new Promise(x=>setTimeout(x,2500));t++;
+      document.getElementById('st').textContent='AI가 만들고 있어요... ('+Math.floor(t*2.5)+'초)';
+      try{const rr=await fetch('https://api.replicate.com/v1/predictions/'+pred.id,{headers:{'Authorization':'Bearer '+k}});result=await rr.json();}catch(e){}
     }
-    document.getElementById('fitBtn').disabled = false;
-  });
+    document.getElementById('sp').style.display='none';
+    if(result.status==='succeeded'&&result.output){
+      const img=document.createElement('img');
+      img.src=Array.isArray(result.output)?result.output[0]:result.output;
+      img.className='fi';document.getElementById('rw').appendChild(img);
+      sm('✅ 착용샷 완성!','ok');document.getElementById('shop').style.display='block';
+    }else throw new Error(result.error||'생성 실패');
+  }catch(e){document.getElementById('sp').style.display='none';sm('❌ '+e.message,'err');}
+  document.getElementById('btn').disabled=false;
+});
 </script>
 </body>
 </html>
