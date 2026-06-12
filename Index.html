@@ -7,11 +7,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --black: #0a0a0a; --white: #f8f6f2; --accent: #c8f542;
-    --gray1: #1a1a1a; --gray2: #2a2a2a; --gray3: #555; --gray4: #999;
-    --font: 'Noto Sans KR', sans-serif;
-  }
+  :root { --black: #0a0a0a; --white: #f8f6f2; --accent: #c8f542; --gray1: #1a1a1a; --gray2: #2a2a2a; --gray3: #555; --gray4: #999; --font: 'Noto Sans KR', sans-serif; }
   body { background: var(--black); color: var(--white); font-family: var(--font); min-height: 100vh; }
   header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--gray2); }
   .logo { font-size: 22px; font-weight: 700; }
@@ -38,7 +34,6 @@
   .upload-box p { font-size: 12px; color: var(--gray4); }
   .preview-img { width: 100%; max-height: 190px; object-fit: cover; border-radius: 9px; margin-top: 10px; display: none; }
   .btn-fit { display: block; width: 100%; padding: 17px; background: var(--accent); color: var(--black); font-family: var(--font); font-size: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; margin-bottom: 14px; }
-  .btn-fit:hover { opacity: 0.87; }
   .btn-fit:disabled { opacity: 0.32; cursor: not-allowed; }
   .status { font-size: 13px; text-align: center; margin-bottom: 14px; min-height: 18px; color: var(--gray4); }
   .status.err { color: #ff6b6b; }
@@ -57,8 +52,6 @@
   .shop-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
   .shop-btn { padding: 9px 16px; border-radius: 20px; border: 1.5px solid var(--gray2); background: transparent; color: var(--white); font-family: var(--font); font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.2s; }
   .shop-btn:hover { border-color: var(--accent); }
-  .error-detail { background: #1a0000; border: 1px solid #5a0000; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #ff9999; line-height: 1.6; margin-top: 10px; display: none; }
-  .error-detail.on { display: block; }
 </style>
 </head>
 <body>
@@ -71,12 +64,10 @@
     <h1>길에서 본 옷,<br><em>내 몸에 입혀보세요</em></h1>
     <p>사진 두 장만 올리면 AI가 착용샷을 만들어드려요</p>
   </div>
-
-  <div class="notice">🔑 Replicate API 키를 입력하세요 (replicate.com → Account → API tokens)</div>
+  <div class="notice">🔑 Replicate API 키를 입력하세요</div>
   <div class="input-row">
     <input type="password" id="apiKey" placeholder="r8_xxxxxxxxxxxxxxxx" autocomplete="off" />
   </div>
-
   <div class="steps">
     <div class="upload-box" id="personBox">
       <input type="file" id="personInput" accept="image/*" />
@@ -93,11 +84,8 @@
       <img class="preview-img" id="clothPreview" alt="옷 사진" />
     </div>
   </div>
-
   <button class="btn-fit" id="fitBtn" disabled>✨ AI 착용샷 만들기</button>
   <div class="status" id="status"></div>
-  <div class="error-detail" id="errorDetail"></div>
-
   <div class="result-section" id="resultSection">
     <div class="divider">결과</div>
     <div class="section-label">AI 착용샷</div>
@@ -107,7 +95,6 @@
         <p id="loadingText">AI가 착용샷을 만들고 있어요...</p>
       </div>
     </div>
-
     <div id="shopSection" style="display:none">
       <div class="divider">쇼핑</div>
       <div class="section-label">이 옷 저렴하게 구매하기</div>
@@ -119,97 +106,63 @@
     </div>
   </div>
 </main>
-
 <script>
   let personFile = null, clothFile = null;
-
   function setupUpload(inputId, previewId, boxId, onFile) {
     document.getElementById(inputId).addEventListener('change', e => {
-      const f = e.target.files[0];
-      if (!f) return;
+      const f = e.target.files[0]; if (!f) return;
       onFile(f);
       const pr = document.getElementById(previewId);
-      pr.src = URL.createObjectURL(f);
-      pr.style.display = 'block';
+      pr.src = URL.createObjectURL(f); pr.style.display = 'block';
       document.getElementById(boxId).classList.add('has-image');
       document.getElementById('fitBtn').disabled = !(personFile && clothFile);
     });
   }
   setupUpload('personInput','personPreview','personBox', f => { personFile = f; document.getElementById('fitBtn').disabled = !(f && clothFile); });
   setupUpload('clothInput','clothPreview','clothBox', f => { clothFile = f; document.getElementById('fitBtn').disabled = !(personFile && f); });
-
   const toBase64 = f => new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
-
-  function setStatus(msg, type='') {
-    const el = document.getElementById('status');
-    el.textContent = msg;
-    el.className = 'status' + (type ? ' '+type : '');
-  }
-
+  function setStatus(msg, type='') { const el=document.getElementById('status'); el.textContent=msg; el.className='status'+(type?' '+type:''); }
   async function apiFetch(apiKey, path, opts={}) {
-    const base = 'https://api.replicate.com';
-    // Try multiple CORS proxies
-    const wrappers = [
-      u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-      u => 'https://proxy.cors.sh/' + u,
-      u => u  // direct (may fail in browser but try anyway)
-    ];
-    let lastErr;
-    for (const wrap of wrappers) {
-      try {
-        const url = wrap(base + path);
-        const headers = { 'Authorization': `Token ${apiKey}`, 'Content-Type': 'application/json' };
-        if (url.includes('proxy.cors.sh')) headers['x-cors-api-key'] = 'temp_' + Math.random().toString(36).slice(2);
-        const res = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
-        if (!res.ok && res.status === 0) throw new Error('blocked');
-        const json = await res.json();
-        return json;
-      } catch(e) { lastErr = e; }
-    }
-    throw lastErr;
+    const targetUrl = 'https://api.replicate.com' + path;
+    const headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+    try {
+      const res = await fetch(targetUrl, { ...opts, headers });
+      const json = await res.json();
+      return json;
+    } catch(e) {}
+    try {
+      const res = await fetch('https://thingproxy.freeboard.io/fetch/' + targetUrl, { ...opts, headers });
+      const json = await res.json();
+      return json;
+    } catch(e) {}
+    throw new Error('API 연결 실패');
   }
-
   document.getElementById('fitBtn').addEventListener('click', async () => {
     const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { setStatus('⚠️ API 키를 입력해주세요', 'err'); return; }
-
+    if (!apiKey) { setStatus('⚠️ API 키를 입력해주세요','err'); return; }
     document.getElementById('fitBtn').disabled = true;
     document.getElementById('resultSection').className = 'result-section on';
     document.getElementById('loadingEl').style.display = 'flex';
     document.getElementById('shopSection').style.display = 'none';
-    document.getElementById('errorDetail').className = 'error-detail';
-    const prevImg = document.getElementById('resultWrap').querySelector('img.final');
-    if (prevImg) prevImg.remove();
+    const prev = document.getElementById('resultWrap').querySelector('img.final');
+    if (prev) prev.remove();
     setStatus('이미지 준비 중...');
-
     try {
       const [p64, c64] = await Promise.all([toBase64(personFile), toBase64(clothFile)]);
       setStatus('AI에게 요청 중...');
-
       const pred = await apiFetch(apiKey, '/v1/predictions', {
         method: 'POST',
-        body: JSON.stringify({
-          version: "c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4",
-          input: { human_img: p64, garm_img: c64, garment_des: "clothing item", is_checked: true, is_checked_crop: false, denoise_steps: 30, seed: 42 }
-        })
+        body: JSON.stringify({ version: "c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4", input: { human_img: p64, garm_img: c64, garment_des: "clothing item", is_checked: true, is_checked_crop: false, denoise_steps: 30, seed: 42 } })
       });
-
       if (pred.error) throw new Error(pred.error);
-      if (!pred.id) throw new Error('예측 ID를 받지 못했어요: ' + JSON.stringify(pred));
-
-      let result = pred;
-      let tries = 0;
+      if (!pred.id) throw new Error('요청 실패: ' + JSON.stringify(pred));
+      let result = pred, tries = 0;
       while (result.status !== 'succeeded' && result.status !== 'failed' && tries < 60) {
-        await new Promise(r => setTimeout(r, 2500));
-        tries++;
-        document.getElementById('loadingText').textContent = `AI가 만들고 있어요... (${tries*2.5|0}초)`;
-        try {
-          result = await apiFetch(apiKey, `/v1/predictions/${pred.id}`);
-        } catch(e) { /* keep polling */ }
+        await new Promise(r => setTimeout(r, 2500)); tries++;
+        document.getElementById('loadingText').textContent = `AI가 만들고 있어요... (${tries*2|0}초)`;
+        try { result = await apiFetch(apiKey, `/v1/predictions/${pred.id}`); } catch(e) {}
       }
-
       document.getElementById('loadingEl').style.display = 'none';
-
       if (result.status === 'succeeded' && result.output) {
         const img = document.createElement('img');
         img.src = Array.isArray(result.output) ? result.output[0] : result.output;
@@ -217,15 +170,10 @@
         document.getElementById('resultWrap').appendChild(img);
         setStatus('✅ 착용샷 완성!', 'ok');
         document.getElementById('shopSection').style.display = 'block';
-      } else {
-        throw new Error(result.error || `상태: ${result.status}`);
-      }
+      } else { throw new Error(result.error || '생성 실패'); }
     } catch(err) {
       document.getElementById('loadingEl').style.display = 'none';
-      setStatus('❌ 오류가 발생했어요', 'err');
-      const ed = document.getElementById('errorDetail');
-      ed.className = 'error-detail on';
-      ed.textContent = err.message;
+      setStatus('❌ ' + err.message, 'err');
     }
     document.getElementById('fitBtn').disabled = false;
   });
